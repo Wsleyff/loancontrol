@@ -1,0 +1,1 @@
+export function StatCard({title,value,subtitle}:{title:string;value:string;subtitle?:string}){return <div className="card" style={{padding:20}}><div className="muted" style={{fontSize:13}}>{title}</div><div style={{fontSize:26,fontWeight:800,margin:"8px 0"}}>{value}</div>{subtitle&&<div className="muted" style={{fontSize:12}}>{subtitle}</div>}</div>}

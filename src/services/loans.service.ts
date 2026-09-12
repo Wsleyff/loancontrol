@@ -1,0 +1,1 @@
+import {createClient} from "@/lib/supabase/client";export async function listLoans(){const s=createClient();if(!s)return [];const {data}=await s.from("loans").select("*,customers(full_name)").order("created_at",{ascending:false});return data??[]}

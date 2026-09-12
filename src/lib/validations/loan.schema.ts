@@ -1,0 +1,1 @@
+import {z} from "zod";export const loanSchema=z.object({customer_id:z.string().uuid(),amount:z.coerce.number().positive(),interest_rate:z.coerce.number().min(0),term:z.coerce.number().int().positive(),frequency:z.enum(["DAILY","WEEKLY","BIWEEKLY","MONTHLY"]),first_due_date:z.string()});

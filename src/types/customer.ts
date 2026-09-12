@@ -1,0 +1,1 @@
+export type CustomerStatus="ACTIVE"|"INACTIVE"|"BLOCKED";export type Customer={id:string;company_id:string;full_name:string;cpf:string|null;phone:string|null;whatsapp:string|null;email:string|null;status:CustomerStatus;created_at:string};

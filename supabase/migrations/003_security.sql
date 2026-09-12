@@ -1,0 +1,15 @@
+create or replace function public.is_company_member(p_company uuid) returns boolean language sql security definer set search_path=public as $$ select exists(select 1 from company_users cu where cu.company_id=p_company and cu.user_id=auth.uid() and cu.status='ACTIVE'); $$;
+create or replace function public.company_role(p_company uuid) returns text language sql security definer set search_path=public as $$ select role from company_users where company_id=p_company and user_id=auth.uid() and status='ACTIVE' limit 1; $$;
+alter table companies enable row level security; alter table profiles enable row level security; alter table company_users enable row level security; alter table customers enable row level security; alter table loans enable row level security; alter table loan_installments enable row level security; alter table payments enable row level security; alter table cash_movements enable row level security; alter table accounts_payable enable row level security; alter table accounts_receivable enable row level security; alter table notifications enable row level security; alter table audit_logs enable row level security;
+create policy companies_select on companies for select using(public.is_company_member(id));
+create policy company_users_select on company_users for select using(user_id=auth.uid() or public.is_company_member(company_id));
+create policy customers_all on customers for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy loans_all on loans for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy installments_all on loan_installments for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy payments_all on payments for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy cash_all on cash_movements for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy payable_all on accounts_payable for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy receivable_all on accounts_receivable for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy notifications_all on notifications for all using(public.is_company_member(company_id)) with check(public.is_company_member(company_id));
+create policy audit_select on audit_logs for select using(public.is_company_member(company_id));
+create policy profiles_self on profiles for all using(id=auth.uid()) with check(id=auth.uid());

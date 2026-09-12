@@ -1,0 +1,3 @@
+export type LoanCalcInput={principal:number;rate:number;term:number;type:"simple"|"compound"|"fixed"};
+export function calculateLoan({principal,rate,term,type}:LoanCalcInput){const r=rate/100;let total=principal;if(type==="simple")total=principal*(1+r*term);else total=principal*Math.pow(1+r,term);return {principal,total,interest:Math.max(0,total-principal),installment:total/term};}
+export function buildInstallments(total:number,term:number,firstDue:Date,months=1){const base=total/term;return Array.from({length:term},(_,i)=>{const d=new Date(firstDue);d.setMonth(d.getMonth()+i*months);const amount=i===term-1?total-base*(term-1):base;return {number:i+1,dueDate:d,amount:Number(amount.toFixed(2))}})}

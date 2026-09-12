@@ -1,0 +1,1 @@
+import {Sidebar} from "./Sidebar";import {Header} from "./Header";export function AppShell({children}:{children:React.ReactNode}){return <><Sidebar/><div style={{marginLeft:250,minHeight:"100vh"}}><Header/>{children}</div></>}
