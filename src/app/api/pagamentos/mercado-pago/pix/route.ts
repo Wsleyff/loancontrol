@@ -1,39 +1,62 @@
-import { NextResponse } from "next/server";
-import { randomUUID } from "crypto";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 
-type Installment = {
-  id: string;
-  company_id: string;
-  loan_id: string;
-  amount: number | string;
-  paid_amount: number | string;
-  discount_amount: number | string;
-  late_fee_amount: number | string;
-  remaining_amount: number | string;
-  status: string;
-};
+import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
-type Loan = {
-  id: string;
-  customer_id: string;
-};
+function getAdminClient() {
+  const url =
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-type Customer = {
-  id: string;
-  full_name: string;
-  email: string | null;
-};
+  const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-export async function POST(request: Request) {
+  if (!url || !serviceRoleKey) {
+    throw new Error(
+      "Configuração do Supabase não encontrada no servidor."
+    );
+  }
+
+  return createAdminClient(
+    url,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
+}
+
+function normalizeAmount(
+  value: unknown
+) {
+  const amount = Number(value);
+
+  if (
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
+    return 0;
+  }
+
+  return Math.round(
+    amount * 100
+  ) / 100;
+}
+
+export async function POST(
+  request: NextRequest
+) {
   try {
-    const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+    const accessToken =
+      process.env.MERCADO_PAGO_ACCESS_TOKEN;
 
     if (!accessToken) {
       return NextResponse.json(
         {
           error:
-            "MERCADO_PAGO_ACCESS_TOKEN não está configurado no .env.local.",
+            "MERCADO_PAGO_ACCESS_TOKEN não configurado no servidor.",
         },
         { status: 500 }
       );
@@ -42,329 +65,405 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const installmentId =
-      typeof body?.installmentId === "string"
-        ? body.installmentId.trim()
-        : "";
+      String(
+        body?.installment_id || ""
+      ).trim();
 
     if (!installmentId) {
       return NextResponse.json(
         {
-          error: "installmentId é obrigatório.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json(
-        {
-          error: "Usuário não autenticado.",
-        },
-        { status: 401 }
-      );
-    }
-
-    const { data: installmentData, error: installmentError } =
-      await supabase
-        .from("loan_installments")
-        .select(
-          `
-          id,
-          company_id,
-          loan_id,
-          amount,
-          paid_amount,
-          discount_amount,
-          late_fee_amount,
-          remaining_amount,
-          status
-        `
-        )
-        .eq("id", installmentId)
-        .maybeSingle();
-
-    if (installmentError) {
-      console.error(
-        "[MERCADO PAGO] Erro ao buscar parcela:",
-        installmentError
-      );
-
-      return NextResponse.json(
-        {
-          error: "Não foi possível consultar a parcela.",
-          details: installmentError.message,
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!installmentData) {
-      return NextResponse.json(
-        {
-          error: "Parcela não encontrada.",
-        },
-        { status: 404 }
-      );
-    }
-
-    const installment = installmentData as Installment;
-
-    const { data: membership, error: membershipError } =
-      await supabase
-        .from("company_users")
-        .select("id, role, status")
-        .eq("company_id", installment.company_id)
-        .eq("user_id", user.id)
-        .eq("status", "ACTIVE")
-        .maybeSingle();
-
-    if (membershipError) {
-      console.error(
-        "[MERCADO PAGO] Erro ao verificar empresa:",
-        membershipError
-      );
-
-      return NextResponse.json(
-        {
-          error: "Não foi possível validar o acesso à empresa.",
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!membership) {
-      return NextResponse.json(
-        {
-          error: "Você não possui acesso a esta empresa.",
-        },
-        { status: 403 }
-      );
-    }
-
-    if (installment.status === "PAID") {
-      return NextResponse.json(
-        {
-          error: "Esta parcela já está paga.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const amount = Number(installment.amount || 0);
-    const paidAmount = Number(installment.paid_amount || 0);
-    const discountAmount = Number(installment.discount_amount || 0);
-    const lateFeeAmount = Number(installment.late_fee_amount || 0);
-
-    const calculatedRemaining =
-      amount + lateFeeAmount - discountAmount - paidAmount;
-
-    const databaseRemaining = Number(
-      installment.remaining_amount ?? calculatedRemaining
-    );
-
-    const remainingAmount =
-      databaseRemaining > 0 ? databaseRemaining : calculatedRemaining;
-
-    if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) {
-      return NextResponse.json(
-        {
-          error: "Esta parcela não possui saldo para pagamento.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const { data: loanData, error: loanError } = await supabase
-      .from("loans")
-      .select("id, customer_id")
-      .eq("id", installment.loan_id)
-      .maybeSingle();
-
-    if (loanError) {
-      console.error(
-        "[MERCADO PAGO] Erro ao buscar empréstimo:",
-        loanError
-      );
-
-      return NextResponse.json(
-        {
-          error: "Não foi possível consultar o empréstimo.",
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!loanData) {
-      return NextResponse.json(
-        {
-          error: "Empréstimo não encontrado.",
-        },
-        { status: 404 }
-      );
-    }
-
-    const loan = loanData as Loan;
-
-    const { data: customerData, error: customerError } =
-      await supabase
-        .from("customers")
-        .select("id, full_name, email")
-        .eq("id", loan.customer_id)
-        .maybeSingle();
-
-    if (customerError) {
-      console.error(
-        "[MERCADO PAGO] Erro ao buscar cliente:",
-        customerError
-      );
-
-      return NextResponse.json(
-        {
-          error: "Não foi possível consultar o cliente.",
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!customerData) {
-      return NextResponse.json(
-        {
-          error: "Cliente não encontrado.",
-        },
-        { status: 404 }
-      );
-    }
-
-    const customer = customerData as Customer;
-
-    const customerEmail = customer.email?.trim();
-
-    if (!customerEmail) {
-      return NextResponse.json(
-        {
           error:
-            "O cliente precisa ter um e-mail cadastrado para gerar o pagamento Pix.",
+            "Parcela não informada.",
         },
         { status: 400 }
       );
     }
 
     /*
-     * IMPORTANTE:
-     * O Mercado Pago aceita somente letras, números, hífen e underscore
-     * em external_reference.
-     *
-     * Esse formato também será usado posteriormente pelo webhook
-     * para localizar a parcela.
+     * Cliente autenticado no portal.
      */
-    const externalReference =
-      `loancontrol-installment-${installment.id}`;
+    const supabase =
+      await createServerClient();
 
-    const idempotencyKey = randomUUID();
+    const {
+      data: {
+        user,
+      },
+      error: userError,
+    } =
+      await supabase.auth.getUser();
 
-    const amountFormatted = remainingAmount.toFixed(2);
-
-    const mercadoPagoResponse = await fetch(
-      "https://api.mercadopago.com/v1/orders",
-      {
-        method: "POST",
-
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-          "X-Idempotency-Key": idempotencyKey,
-        },
-
-        body: JSON.stringify({
-          type: "online",
-
-          processing_mode: "automatic",
-
-          total_amount: amountFormatted,
-
-          external_reference: externalReference,
-
-          transactions: {
-            payments: [
-              {
-                amount: amountFormatted,
-
-                payment_method: {
-                  id: "pix",
-                  type: "bank_transfer",
-                },
-              },
-            ],
-          },
-
-          payer: {
-            email: customerEmail,
-          },
-        }),
-      }
-    );
-
-    const mercadoPagoData = await mercadoPagoResponse.json();
-
-    if (!mercadoPagoResponse.ok) {
-      console.error(
-        "[MERCADO PAGO] Erro ao criar order:",
-        mercadoPagoResponse.status,
-        mercadoPagoData
-      );
-
+    if (userError || !user) {
       return NextResponse.json(
         {
-          error: "O Mercado Pago recusou a criação da cobrança.",
-
-          mercado_pago_status: mercadoPagoResponse.status,
-
-          details:
-            mercadoPagoData?.message ||
-            mercadoPagoData?.error ||
-            "Erro desconhecido no Mercado Pago.",
+          error:
+            "Sua sessão expirou. Faça login novamente.",
         },
-        { status: 502 }
+        { status: 401 }
       );
     }
 
-    const payment =
-      mercadoPagoData?.transactions?.payments?.[0] ?? null;
+    /*
+     * Cliente vinculado ao usuário.
+     */
+    const {
+      data: customer,
+      error: customerError,
+    } =
+      await supabase
+        .from("customers")
+        .select("*")
+        .eq(
+          "auth_user_id",
+          user.id
+        )
+        .eq(
+          "portal_enabled",
+          true
+        )
+        .maybeSingle();
 
-    const paymentMethod = payment?.payment_method ?? null;
-
-    const orderId = mercadoPagoData?.id ?? null;
-
-    const mercadoPagoPaymentId = payment?.id ?? null;
-
-    const qrCode = paymentMethod?.qr_code ?? null;
-
-    const qrCodeBase64 =
-      paymentMethod?.qr_code_base64 ?? null;
-
-    const ticketUrl =
-      paymentMethod?.ticket_url ?? null;
-
-    if (!orderId || !qrCode) {
+    if (customerError) {
       console.error(
-        "[MERCADO PAGO] Order criada, mas dados Pix não retornados:",
-        mercadoPagoData
+        "[PIX] Cliente:",
+        customerError
       );
 
       return NextResponse.json(
         {
           error:
-            "O Mercado Pago criou a cobrança, mas não retornou o código Pix esperado.",
+            "Não foi possível validar seu cadastro.",
+        },
+        { status: 500 }
+      );
+    }
 
-          order_id: orderId,
+    if (!customer) {
+      return NextResponse.json(
+        {
+          error:
+            "Cliente não encontrado ou portal desativado.",
+        },
+        { status: 403 }
+      );
+    }
+
+    /*
+     * Admin client somente no servidor.
+     */
+    const admin =
+      getAdminClient();
+
+    /*
+     * Busca a parcela.
+     */
+    const {
+      data: installment,
+      error: installmentError,
+    } =
+      await admin
+        .from("loan_installments")
+        .select("*")
+        .eq(
+          "id",
+          installmentId
+        )
+        .maybeSingle();
+
+    if (installmentError) {
+      console.error(
+        "[PIX] Parcela:",
+        installmentError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Não foi possível localizar a parcela.",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!installment) {
+      return NextResponse.json(
+        {
+          error:
+            "Parcela não encontrada.",
+        },
+        { status: 404 }
+      );
+    }
+
+    /*
+     * Busca o empréstimo para garantir
+     * que a parcela pertence ao cliente
+     * autenticado.
+     */
+    const {
+      data: loan,
+      error: loanError,
+    } =
+      await admin
+        .from("loans")
+        .select("*")
+        .eq(
+          "id",
+          installment.loan_id
+        )
+        .maybeSingle();
+
+    if (loanError) {
+      console.error(
+        "[PIX] Empréstimo:",
+        loanError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Não foi possível validar o empréstimo.",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!loan) {
+      return NextResponse.json(
+        {
+          error:
+            "Empréstimo não encontrado.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (
+      String(loan.customer_id) !==
+      String(customer.id)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Esta parcela não pertence à sua conta.",
+        },
+        { status: 403 }
+      );
+    }
+
+    /*
+     * Não permite gerar PIX para parcela
+     * já quitada.
+     */
+    if (
+      String(
+        installment.status || ""
+      ).toUpperCase() === "PAID"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Esta parcela já está paga.",
+        },
+        { status: 409 }
+      );
+    }
+
+    /*
+     * O valor do PIX é somente o saldo atual
+     * da parcela.
+     */
+    const remaining =
+      normalizeAmount(
+        installment.remaining_amount
+      );
+
+    const originalAmount =
+      normalizeAmount(
+        installment.amount
+      );
+
+    const amount =
+      remaining > 0
+        ? remaining
+        : originalAmount;
+
+    if (amount <= 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Esta parcela não possui saldo para pagamento.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /*
+     * E-mail do cliente.
+     *
+     * Se o cadastro não possuir e-mail,
+     * usamos o e-mail autenticado.
+     */
+    const payerEmail =
+      String(
+        customer.email ||
+          user.email ||
+          ""
+      ).trim();
+
+    if (!payerEmail) {
+      return NextResponse.json(
+        {
+          error:
+            "O cliente precisa possuir um e-mail cadastrado para gerar o PIX.",
+        },
+        { status: 400 }
+      );
+    }
+
+    /*
+     * O external_reference identifica
+     * exatamente qual parcela será atualizada
+     * pelo Webhook.
+     *
+     * IMPORTANTE:
+     * somente letras, números e hífen.
+     */
+    const externalReference =
+      `loancontrol-installment-${installment.id}`;
+
+    /*
+     * Idempotência da requisição.
+     */
+    const idempotencyKey =
+      `loancontrol-${installment.id}-${Date.now()}`;
+
+    const mercadoPagoResponse =
+      await fetch(
+        "https://api.mercadopago.com/v1/orders",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type":
+              "application/json",
+            "X-Idempotency-Key":
+              idempotencyKey,
+          },
+          body: JSON.stringify({
+            type: "online",
+            processing_mode:
+              "automatic",
+            total_amount:
+              amount.toFixed(2),
+            external_reference:
+              externalReference,
+
+            transactions: {
+              payments: [
+                {
+                  amount:
+                    amount.toFixed(2),
+
+                  payment_method: {
+                    id: "pix",
+                    type: "bank_transfer",
+                  },
+                },
+              ],
+            },
+
+            payer: {
+              email:
+                payerEmail,
+            },
+          }),
+        }
+      );
+
+    const mercadoPagoData =
+      await mercadoPagoResponse.json();
+
+    if (!mercadoPagoResponse.ok) {
+      console.error(
+        "[PIX] Mercado Pago:",
+        JSON.stringify(
+          mercadoPagoData,
+          null,
+          2
+        )
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            mercadoPagoData?.message ||
+            mercadoPagoData?.error ||
+            "O Mercado Pago recusou a criação do PIX.",
+          details:
+            mercadoPagoData,
+        },
+        {
+          status:
+            mercadoPagoResponse.status >=
+            400 &&
+            mercadoPagoResponse.status <
+              500
+              ? 400
+              : 502,
+        }
+      );
+    }
+
+    const qrCode =
+      mercadoPagoData?.transactions
+        ?.payments?.[0]
+        ?.payment_method
+        ?.qr_code ||
+      mercadoPagoData?.qr_code ||
+      "";
+
+    const qrCodeBase64 =
+      mercadoPagoData?.transactions
+        ?.payments?.[0]
+        ?.payment_method
+        ?.qr_code_base64 ||
+      mercadoPagoData?.qr_code_base64 ||
+      "";
+
+    const ticketUrl =
+      mercadoPagoData?.transactions
+        ?.payments?.[0]
+        ?.payment_method
+        ?.ticket_url ||
+      mercadoPagoData?.ticket_url ||
+      null;
+
+    /*
+     * Dependendo da resposta do Orders API,
+     * os dados podem estar em estruturas
+     * ligeiramente diferentes.
+     */
+    if (
+      !qrCode ||
+      !qrCodeBase64
+    ) {
+      console.error(
+        "[PIX] Resposta sem QR Code:",
+        JSON.stringify(
+          mercadoPagoData,
+          null,
+          2
+        )
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "O Mercado Pago criou a cobrança, mas não retornou o QR Code PIX.",
+          order_id:
+            mercadoPagoData?.id ||
+            null,
         },
         { status: 502 }
       );
@@ -373,49 +472,52 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
 
-      order_id: orderId,
+      order_id:
+        mercadoPagoData.id,
 
-      mercado_pago_payment_id:
-        mercadoPagoPaymentId,
+      installment_id:
+        installment.id,
 
-      installment_id: installment.id,
+      amount,
 
-      customer_id: customer.id,
+      qr_code:
+        qrCode,
 
-      customer_name: customer.full_name,
+      qr_code_base64:
+        qrCodeBase64,
 
-      amount: Number(amountFormatted),
+      ticket_url:
+        ticketUrl,
 
       status:
-        mercadoPagoData?.status ??
+        mercadoPagoData.status ||
         "action_required",
 
       status_detail:
-        mercadoPagoData?.status_detail ??
+        mercadoPagoData.status_detail ||
         "waiting_transfer",
-
-      pix: {
-        qr_code: qrCode,
-
-        qr_code_base64:
-          qrCodeBase64,
-
-        ticket_url:
-          ticketUrl,
-      },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(
-      "[MERCADO PAGO] Erro inesperado:",
+      "[PIX] Erro inesperado:",
       error
     );
 
     return NextResponse.json(
       {
         error:
-          "Erro interno ao gerar pagamento Pix.",
+          error?.message ||
+          "Erro interno ao gerar o PIX.",
       },
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    service:
+      "LoanControl Mercado Pago PIX",
+  });
 }
