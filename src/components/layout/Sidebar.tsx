@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   X,
   ChevronRight,
+  Sparkles,
+  CreditCard,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -172,6 +174,7 @@ export function Sidebar({
       {/* =====================================================
           OVERLAY MOBILE
       ===================================================== */}
+
       {mobileOpen && (
         <button
           type="button"
@@ -184,6 +187,7 @@ export function Sidebar({
       {/* =====================================================
           SIDEBAR
       ===================================================== */}
+
       <aside
         className={`loancontrol-sidebar ${
           mobileOpen
@@ -192,47 +196,50 @@ export function Sidebar({
         }`}
       >
         {/* ===================================================
-            TOPO / LOGO
+            MARCA
         =================================================== */}
-        <div className="loancontrol-sidebar-top">
+
+        <div className="loancontrol-brand-area">
           <div className="loancontrol-brand">
-            <div className="loancontrol-brand-icon">
-              <Wallet
-                size={21}
-                strokeWidth={2.2}
-              />
+            <div className="loancontrol-logo">
+              <div className="loancontrol-logo-inner">
+                <CreditCard
+                  size={22}
+                  strokeWidth={2.4}
+                />
+              </div>
             </div>
 
-            <div className="loancontrol-brand-text">
+            <div className="loancontrol-brand-content">
               <div className="loancontrol-brand-name">
-                Loan
-                <span>Control</span>
+                Loan<span>Control</span>
               </div>
 
-              <div className="loancontrol-brand-subtitle">
-                Gestão de crédito
+              <div className="loancontrol-brand-caption">
+                Plataforma de crédito
               </div>
             </div>
 
             <button
               type="button"
-              className="loancontrol-mobile-close"
+              className="loancontrol-close-mobile"
               onClick={closeMobileMenu}
               aria-label="Fechar menu"
             >
-              <X size={20} />
+              <X size={19} />
             </button>
           </div>
-
-          <div className="loancontrol-sidebar-line" />
         </div>
 
         {/* ===================================================
-            MENU
+            ÁREA DE NAVEGAÇÃO
         =================================================== */}
-        <div className="loancontrol-sidebar-scroll">
-          <div className="loancontrol-section-title">
-            PRINCIPAL
+
+        <div className="loancontrol-navigation">
+          {/* PRINCIPAL */}
+
+          <div className="loancontrol-menu-heading">
+            <span>MENU PRINCIPAL</span>
           </div>
 
           <nav className="loancontrol-nav">
@@ -245,38 +252,48 @@ export function Sidebar({
                   key={item.href}
                   href={item.href}
                   onClick={closeMobileMenu}
-                  className={`loancontrol-nav-item ${
+                  className={`loancontrol-menu-item ${
                     active
-                      ? "loancontrol-nav-item-active"
+                      ? "loancontrol-menu-item-active"
                       : ""
                   }`}
                 >
-                  <span className="loancontrol-nav-icon">
+                  <span
+                    className={`loancontrol-menu-icon ${
+                      active
+                        ? "loancontrol-menu-icon-active"
+                        : ""
+                    }`}
+                  >
                     <Icon
-                      size={18}
+                      size={19}
                       strokeWidth={
-                        active ? 2.2 : 1.9
+                        active ? 2.3 : 1.9
                       }
                     />
                   </span>
 
-                  <span className="loancontrol-nav-label">
+                  <span className="loancontrol-menu-text">
                     {item.label}
                   </span>
 
                   {active && (
-                    <ChevronRight
-                      size={15}
-                      className="loancontrol-nav-arrow"
-                    />
+                    <span className="loancontrol-active-indicator" />
                   )}
+
+                  <ChevronRight
+                    size={15}
+                    className="loancontrol-menu-chevron"
+                  />
                 </Link>
               );
             })}
           </nav>
 
-          <div className="loancontrol-section-title loancontrol-admin-title">
-            ADMINISTRAÇÃO
+          {/* ADMINISTRAÇÃO */}
+
+          <div className="loancontrol-menu-heading loancontrol-admin-heading">
+            <span>ADMINISTRAÇÃO</span>
           </div>
 
           <nav className="loancontrol-nav">
@@ -289,59 +306,76 @@ export function Sidebar({
                   key={item.href}
                   href={item.href}
                   onClick={closeMobileMenu}
-                  className={`loancontrol-nav-item ${
+                  className={`loancontrol-menu-item ${
                     active
-                      ? "loancontrol-nav-item-active"
+                      ? "loancontrol-menu-item-active"
                       : ""
                   }`}
                 >
-                  <span className="loancontrol-nav-icon">
+                  <span
+                    className={`loancontrol-menu-icon ${
+                      active
+                        ? "loancontrol-menu-icon-active"
+                        : ""
+                    }`}
+                  >
                     <Icon
-                      size={18}
+                      size={19}
                       strokeWidth={
-                        active ? 2.2 : 1.9
+                        active ? 2.3 : 1.9
                       }
                     />
                   </span>
 
-                  <span className="loancontrol-nav-label">
+                  <span className="loancontrol-menu-text">
                     {item.label}
                   </span>
 
                   {active && (
-                    <ChevronRight
-                      size={15}
-                      className="loancontrol-nav-arrow"
-                    />
+                    <span className="loancontrol-active-indicator" />
                   )}
+
+                  <ChevronRight
+                    size={15}
+                    className="loancontrol-menu-chevron"
+                  />
                 </Link>
               );
             })}
           </nav>
 
           {/* =================================================
-              MASTER
+              ÁREA MASTER
           ================================================= */}
+
           {isMaster && (
             <Link
               href="/master"
               onClick={closeMobileMenu}
-              className="loancontrol-master-link"
+              className="loancontrol-master-card"
             >
+              <div className="loancontrol-master-glow" />
+
               <div className="loancontrol-master-icon">
-                <ShieldCheck size={18} />
+                <ShieldCheck
+                  size={19}
+                  strokeWidth={2.2}
+                />
               </div>
 
-              <div className="loancontrol-master-text">
-                <span>Área Master</span>
-                <small>
+              <div className="loancontrol-master-content">
+                <div className="loancontrol-master-title">
+                  Área Master
+                </div>
+
+                <div className="loancontrol-master-subtitle">
                   Controle da plataforma
-                </small>
+                </div>
               </div>
 
               <ChevronRight
                 size={16}
-                className="loancontrol-master-arrow"
+                className="loancontrol-master-chevron"
               />
             </Link>
           )}
@@ -350,17 +384,50 @@ export function Sidebar({
         {/* ===================================================
             RODAPÉ
         =================================================== */}
+
         <div className="loancontrol-sidebar-footer">
+          {/* PLANO / STATUS */}
+
+          <div className="loancontrol-status-card">
+            <div className="loancontrol-status-icon">
+              <Sparkles
+                size={15}
+                strokeWidth={2.3}
+              />
+            </div>
+
+            <div className="loancontrol-status-content">
+              <span className="loancontrol-status-label">
+                SISTEMA
+              </span>
+
+              <span className="loancontrol-status-value">
+                Operação normal
+              </span>
+            </div>
+
+            <span className="loancontrol-status-dot" />
+          </div>
+
+          {/* CONTA */}
+
           <div className="loancontrol-account">
             <div className="loancontrol-account-avatar">
               LC
             </div>
 
-            <div className="loancontrol-account-info">
-              <strong>Conta ativa</strong>
-              <span>LoanControl</span>
+            <div className="loancontrol-account-content">
+              <span className="loancontrol-account-name">
+                Minha conta
+              </span>
+
+              <span className="loancontrol-account-company">
+                LoanControl
+              </span>
             </div>
           </div>
+
+          {/* SAIR */}
 
           <button
             type="button"
@@ -368,18 +435,31 @@ export function Sidebar({
             disabled={loggingOut}
             className="loancontrol-logout"
           >
-            <LogOut size={17} />
+            <span className="loancontrol-logout-icon">
+              <LogOut
+                size={17}
+                strokeWidth={2}
+              />
+            </span>
 
-            <span>
+            <span className="loancontrol-logout-text">
               {loggingOut
-                ? "Saindo..."
+                ? "Encerrando sessão..."
                 : "Sair da conta"}
             </span>
           </button>
+
+          <div className="loancontrol-version">
+            LoanControl • Plataforma de gestão
+          </div>
         </div>
       </aside>
 
       <style jsx>{`
+        /* =====================================================
+           SIDEBAR PRINCIPAL
+        ===================================================== */
+
         .loancontrol-sidebar {
           position: fixed;
           top: 0;
@@ -387,64 +467,117 @@ export function Sidebar({
           bottom: 0;
           width: 250px;
           min-width: 250px;
+
           display: flex;
           flex-direction: column;
-          background: linear-gradient(
-            180deg,
-            #0f172a 0%,
-            #111827 55%,
-            #0b1220 100%
-          );
+
+          background:
+            radial-gradient(
+              circle at 15% 0%,
+              rgba(37, 99, 235, 0.16),
+              transparent 30%
+            ),
+            linear-gradient(
+              180deg,
+              #0b1220 0%,
+              #0f172a 45%,
+              #0b1220 100%
+            );
+
           color: #ffffff;
-          z-index: 1000;
+
           border-right: 1px solid
-            rgba(255, 255, 255, 0.07);
+            rgba(148, 163, 184, 0.09);
+
           box-shadow:
-            10px 0 35px
+            14px 0 45px
               rgba(15, 23, 42, 0.08);
+
+          z-index: 1000;
+
           overflow: hidden;
         }
 
-        .loancontrol-sidebar-top {
+        /* =====================================================
+           MARCA
+        ===================================================== */
+
+        .loancontrol-brand-area {
           flex-shrink: 0;
-          padding: 20px 17px 0;
+          padding: 21px 17px 18px;
         }
 
         .loancontrol-brand {
-          min-height: 40px;
+          min-height: 48px;
+
           display: flex;
           align-items: center;
+
           gap: 11px;
         }
 
-        .loancontrol-brand-icon {
-          width: 40px;
-          height: 40px;
-          min-width: 40px;
-          border-radius: 11px;
+        .loancontrol-logo {
+          width: 42px;
+          height: 42px;
+          min-width: 42px;
+
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(
-            135deg,
-            #2563eb,
-            #3b82f6
-          );
+
+          border-radius: 13px;
+
+          background:
+            linear-gradient(
+              145deg,
+              #2563eb,
+              #3b82f6
+            );
+
           box-shadow:
-            0 8px 22px
+            0 10px 28px
               rgba(37, 99, 235, 0.35);
+
+          position: relative;
         }
 
-        .loancontrol-brand-text {
+        .loancontrol-logo::after {
+          content: "";
+
+          position: absolute;
+          inset: 1px;
+
+          border-radius: 12px;
+
+          border: 1px solid
+            rgba(255, 255, 255, 0.18);
+
+          pointer-events: none;
+        }
+
+        .loancontrol-logo-inner {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          color: #ffffff;
+        }
+
+        .loancontrol-brand-content {
           min-width: 0;
+          flex: 1;
         }
 
         .loancontrol-brand-name {
-          color: #ffffff;
           font-size: 19px;
           line-height: 1;
+
           font-weight: 850;
-          letter-spacing: -0.6px;
+
+          letter-spacing: -0.75px;
+
+          color: #ffffff;
+
           white-space: nowrap;
         }
 
@@ -452,282 +585,637 @@ export function Sidebar({
           color: #60a5fa;
         }
 
-        .loancontrol-brand-subtitle {
-          margin-top: 5px;
-          color: #94a3b8;
+        .loancontrol-brand-caption {
+          margin-top: 6px;
+
+          color: #64748b;
+
           font-size: 9px;
           line-height: 1;
-          font-weight: 600;
+
+          font-weight: 700;
+
+          letter-spacing: 0.02em;
+
           white-space: nowrap;
         }
 
-        .loancontrol-sidebar-line {
-          height: 1px;
-          margin-top: 17px;
-          background: rgba(255, 255, 255, 0.07);
-        }
-
-        .loancontrol-mobile-close {
+        .loancontrol-close-mobile {
           display: none;
-          margin-left: auto;
-          width: 38px;
-          height: 38px;
-          border: 1px solid
-            rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-          background: rgba(255, 255, 255, 0.06);
-          color: #cbd5e1;
+
+          width: 36px;
+          height: 36px;
+          min-width: 36px;
+
           align-items: center;
           justify-content: center;
+
+          border: 1px solid
+            rgba(255, 255, 255, 0.1);
+
+          border-radius: 10px;
+
+          background:
+            rgba(255, 255, 255, 0.06);
+
+          color: #cbd5e1;
+
           cursor: pointer;
-          flex-shrink: 0;
         }
 
-        .loancontrol-sidebar-scroll {
+        /* =====================================================
+           NAVEGAÇÃO
+        ===================================================== */
+
+        .loancontrol-navigation {
           flex: 1;
           min-height: 0;
+
           overflow-y: auto;
           overflow-x: hidden;
-          padding: 15px 11px 12px;
+
+          padding: 2px 11px 14px;
+
           scrollbar-width: thin;
-          scrollbar-color: #334155 transparent;
+          scrollbar-color:
+            #334155
+            transparent;
         }
 
-        .loancontrol-section-title {
-          padding: 0 9px 8px;
-          color: #64748b;
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 0.14em;
+        .loancontrol-menu-heading {
+          padding:
+            8px 10px 8px;
+
+          color: #475569;
+
+          font-size: 8px;
+
+          font-weight: 850;
+
+          letter-spacing: 0.16em;
         }
 
-        .loancontrol-admin-title {
-          padding-top: 20px;
+        .loancontrol-admin-heading {
+          margin-top: 18px;
         }
 
         .loancontrol-nav {
           display: flex;
           flex-direction: column;
+
           gap: 3px;
         }
 
-        .loancontrol-nav-item {
+        /* =====================================================
+           ITEM
+        ===================================================== */
+
+        .loancontrol-menu-item {
           position: relative;
+
           width: 100%;
-          min-height: 42px;
+          min-height: 43px;
+
           display: flex;
           align-items: center;
+
           gap: 11px;
-          padding: 0 10px;
-          border-radius: 10px;
-          color: #cbd5e1;
+
+          padding:
+            0 10px;
+
+          border-radius: 11px;
+
+          color: #94a3b8;
+
           text-decoration: none;
-          font-size: 13px;
-          font-weight: 600;
+
+          font-size: 12.5px;
+
+          font-weight: 650;
+
+          letter-spacing: -0.05px;
+
           transition:
             background 0.18s ease,
             color 0.18s ease,
             transform 0.18s ease;
         }
 
-        .loancontrol-nav-item:hover {
-          background: rgba(255, 255, 255, 0.07);
-          color: #ffffff;
+        .loancontrol-menu-item:hover {
+          background:
+            rgba(255, 255, 255, 0.055);
+
+          color: #f8fafc;
+
+          transform:
+            translateX(2px);
         }
 
-        .loancontrol-nav-item-active {
+        .loancontrol-menu-item-active {
           color: #ffffff;
-          background: linear-gradient(
-            135deg,
-            rgba(37, 99, 235, 0.25),
-            rgba(59, 130, 246, 0.12)
-          );
+
+          background:
+            linear-gradient(
+              100deg,
+              rgba(37, 99, 235, 0.22),
+              rgba(37, 99, 235, 0.08)
+            );
+
           box-shadow:
             inset 0 0 0 1px
-              rgba(96, 165, 250, 0.1);
+              rgba(96, 165, 250, 0.08);
         }
 
-        .loancontrol-nav-icon {
-          width: 22px;
-          min-width: 22px;
-          height: 22px;
+        .loancontrol-menu-icon {
+          width: 31px;
+          height: 31px;
+          min-width: 31px;
+
           display: flex;
           align-items: center;
           justify-content: center;
-        }
 
-        .loancontrol-nav-item-active
-          .loancontrol-nav-icon {
-          color: #60a5fa;
-        }
+          border-radius: 9px;
 
-        .loancontrol-nav-label {
-          flex: 1;
-          min-width: 0;
-          line-height: 1.2;
-        }
+          color: #64748b;
 
-        .loancontrol-nav-arrow {
-          color: #60a5fa;
-          flex-shrink: 0;
-        }
-
-        .loancontrol-master-link {
-          min-height: 58px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-top: 18px;
-          padding: 9px 10px;
-          border-radius: 11px;
-          color: #dbeafe;
-          text-decoration: none;
-          background: linear-gradient(
-            135deg,
-            rgba(37, 99, 235, 0.2),
-            rgba(59, 130, 246, 0.08)
-          );
-          border: 1px solid
-            rgba(96, 165, 250, 0.2);
           transition:
             background 0.18s ease,
-            border-color 0.18s ease;
+            color 0.18s ease;
         }
 
-        .loancontrol-master-link:hover {
-          background: linear-gradient(
-            135deg,
-            rgba(37, 99, 235, 0.28),
-            rgba(59, 130, 246, 0.12)
-          );
-          border-color: rgba(
-            96,
-            165,
-            250,
-            0.32
-          );
+        .loancontrol-menu-icon-active {
+          color: #60a5fa;
+
+          background:
+            rgba(37, 99, 235, 0.16);
+        }
+
+        .loancontrol-menu-text {
+          flex: 1;
+          min-width: 0;
+
+          line-height: 1.2;
+
+          white-space: nowrap;
+        }
+
+        .loancontrol-menu-chevron {
+          flex-shrink: 0;
+
+          color: #334155;
+
+          opacity: 0;
+
+          transform:
+            translateX(-3px);
+
+          transition:
+            opacity 0.18s ease,
+            transform 0.18s ease,
+            color 0.18s ease;
+        }
+
+        .loancontrol-menu-item:hover
+          .loancontrol-menu-chevron {
+          opacity: 1;
+
+          transform:
+            translateX(0);
+
+          color: #64748b;
+        }
+
+        .loancontrol-menu-item-active
+          .loancontrol-menu-chevron {
+          opacity: 1;
+
+          transform:
+            translateX(0);
+
+          color: #60a5fa;
+        }
+
+        .loancontrol-active-indicator {
+          position: absolute;
+
+          left: 0;
+          top: 50%;
+
+          width: 3px;
+          height: 22px;
+
+          transform:
+            translateY(-50%);
+
+          border-radius:
+            0 4px 4px 0;
+
+          background:
+            linear-gradient(
+              180deg,
+              #60a5fa,
+              #2563eb
+            );
+
+          box-shadow:
+            0 0 12px
+              rgba(59, 130, 246, 0.5);
+        }
+
+        /* =====================================================
+           MASTER
+        ===================================================== */
+
+        .loancontrol-master-card {
+          position: relative;
+
+          min-height: 62px;
+
+          display: flex;
+          align-items: center;
+
+          gap: 10px;
+
+          margin:
+            21px 1px 2px;
+
+          padding:
+            9px 10px;
+
+          border-radius: 13px;
+
+          overflow: hidden;
+
+          color: #dbeafe;
+
+          text-decoration: none;
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(37, 99, 235, 0.19),
+              rgba(30, 64, 175, 0.08)
+            );
+
+          border: 1px solid
+            rgba(96, 165, 250, 0.16);
+
+          transition:
+            background 0.2s ease,
+            border-color 0.2s ease,
+            transform 0.2s ease;
+        }
+
+        .loancontrol-master-card:hover {
+          background:
+            linear-gradient(
+              135deg,
+              rgba(37, 99, 235, 0.27),
+              rgba(30, 64, 175, 0.12)
+            );
+
+          border-color:
+            rgba(96, 165, 250, 0.28);
+
+          transform:
+            translateY(-1px);
+        }
+
+        .loancontrol-master-glow {
+          position: absolute;
+
+          width: 90px;
+          height: 90px;
+
+          right: -45px;
+          top: -40px;
+
+          border-radius: 50%;
+
+          background:
+            rgba(59, 130, 246, 0.18);
+
+          filter:
+            blur(20px);
+
+          pointer-events: none;
         }
 
         .loancontrol-master-icon {
           width: 34px;
           height: 34px;
           min-width: 34px;
-          border-radius: 9px;
+
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(37, 99, 235, 0.22);
+
+          border-radius: 10px;
+
           color: #60a5fa;
+
+          background:
+            rgba(37, 99, 235, 0.18);
+
+          border: 1px solid
+            rgba(96, 165, 250, 0.12);
         }
 
-        .loancontrol-master-text {
-          flex: 1;
+        .loancontrol-master-content {
           min-width: 0;
+          flex: 1;
+
           display: flex;
           flex-direction: column;
+
           gap: 3px;
         }
 
-        .loancontrol-master-text span {
-          font-size: 12px;
+        .loancontrol-master-title {
+          color: #e0edff;
+
+          font-size: 11px;
+
           font-weight: 800;
+
           white-space: nowrap;
         }
 
-        .loancontrol-master-text small {
-          color: #94a3b8;
-          font-size: 9px;
+        .loancontrol-master-subtitle {
+          color: #64748b;
+
+          font-size: 8px;
+
+          font-weight: 600;
+
           white-space: nowrap;
         }
 
-        .loancontrol-master-arrow {
+        .loancontrol-master-chevron {
           color: #60a5fa;
+
           flex-shrink: 0;
         }
+
+        /* =====================================================
+           RODAPÉ
+        ===================================================== */
 
         .loancontrol-sidebar-footer {
           flex-shrink: 0;
-          padding: 12px 13px 14px;
+
+          padding:
+            12px 12px 13px;
+
           border-top: 1px solid
-            rgba(255, 255, 255, 0.07);
-          background: rgba(2, 6, 23, 0.18);
+            rgba(148, 163, 184, 0.08);
+
+          background:
+            linear-gradient(
+              180deg,
+              rgba(2, 6, 23, 0.12),
+              rgba(2, 6, 23, 0.3)
+            );
         }
+
+        /* STATUS */
+
+        .loancontrol-status-card {
+          min-height: 43px;
+
+          display: flex;
+          align-items: center;
+
+          gap: 9px;
+
+          padding:
+            6px 8px;
+
+          margin-bottom: 10px;
+
+          border-radius: 10px;
+
+          background:
+            rgba(15, 23, 42, 0.52);
+
+          border: 1px solid
+            rgba(148, 163, 184, 0.07);
+        }
+
+        .loancontrol-status-icon {
+          width: 28px;
+          height: 28px;
+          min-width: 28px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          border-radius: 8px;
+
+          color: #93c5fd;
+
+          background:
+            rgba(37, 99, 235, 0.12);
+        }
+
+        .loancontrol-status-content {
+          min-width: 0;
+          flex: 1;
+
+          display: flex;
+          flex-direction: column;
+
+          gap: 2px;
+        }
+
+        .loancontrol-status-label {
+          color: #475569;
+
+          font-size: 7px;
+
+          font-weight: 850;
+
+          letter-spacing: 0.12em;
+        }
+
+        .loancontrol-status-value {
+          color: #94a3b8;
+
+          font-size: 9px;
+
+          font-weight: 650;
+
+          white-space: nowrap;
+        }
+
+        .loancontrol-status-dot {
+          width: 7px;
+          height: 7px;
+          min-width: 7px;
+
+          border-radius: 50%;
+
+          background: #22c55e;
+
+          box-shadow:
+            0 0 0 3px
+              rgba(34, 197, 94, 0.09),
+            0 0 10px
+              rgba(34, 197, 94, 0.3);
+        }
+
+        /* CONTA */
 
         .loancontrol-account {
           display: flex;
           align-items: center;
+
           gap: 9px;
-          padding: 2px 5px 10px;
+
+          padding:
+            4px 5px 10px;
         }
 
         .loancontrol-account-avatar {
           width: 35px;
           height: 35px;
           min-width: 35px;
-          border-radius: 10px;
+
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #1e293b;
+
+          border-radius: 10px;
+
+          background:
+            linear-gradient(
+              145deg,
+              #1e3a8a,
+              #172554
+            );
+
           border: 1px solid
-            rgba(148, 163, 184, 0.15);
-          color: #93c5fd;
+            rgba(96, 165, 250, 0.15);
+
+          color: #bfdbfe;
+
           font-size: 10px;
-          font-weight: 800;
+
+          font-weight: 850;
+
+          box-shadow:
+            0 5px 14px
+              rgba(2, 6, 23, 0.2);
         }
 
-        .loancontrol-account-info {
+        .loancontrol-account-content {
           min-width: 0;
+
           display: flex;
           flex-direction: column;
-          gap: 2px;
+
+          gap: 3px;
         }
 
-        .loancontrol-account-info strong {
+        .loancontrol-account-name {
           color: #e2e8f0;
+
           font-size: 10px;
-          font-weight: 700;
+
+          font-weight: 750;
+
+          white-space: nowrap;
         }
 
-        .loancontrol-account-info span {
+        .loancontrol-account-company {
           color: #64748b;
+
           font-size: 8px;
+
+          font-weight: 600;
+
+          white-space: nowrap;
         }
+
+        /* SAIR */
 
         .loancontrol-logout {
           width: 100%;
-          min-height: 40px;
+          min-height: 39px;
+
           display: flex;
           align-items: center;
           justify-content: center;
+
           gap: 8px;
-          border: 1px solid
-            rgba(248, 113, 113, 0.15);
+
+          border:
+            1px solid
+            rgba(248, 113, 113, 0.1);
+
           border-radius: 10px;
-          background: rgba(127, 29, 29, 0.13);
+
+          background:
+            rgba(127, 29, 29, 0.08);
+
           color: #fca5a5;
-          font-size: 11px;
-          font-weight: 700;
+
           cursor: pointer;
+
           transition:
             background 0.18s ease,
-            border-color 0.18s ease;
+            border-color 0.18s ease,
+            color 0.18s ease;
+        }
+
+        .loancontrol-logout-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .loancontrol-logout-text {
+          font-size: 10px;
+
+          font-weight: 750;
         }
 
         .loancontrol-logout:hover:not(:disabled) {
-          background: rgba(220, 38, 38, 0.18);
-          border-color: rgba(
-            248,
-            113,
-            113,
-            0.28
-          );
+          background:
+            rgba(220, 38, 38, 0.13);
+
+          border-color:
+            rgba(248, 113, 113, 0.22);
+
+          color: #fecaca;
         }
 
         .loancontrol-logout:disabled {
+          opacity: 0.55;
+
           cursor: wait;
-          opacity: 0.6;
         }
+
+        .loancontrol-version {
+          margin-top: 9px;
+
+          text-align: center;
+
+          color: #334155;
+
+          font-size: 7px;
+
+          font-weight: 600;
+
+          white-space: nowrap;
+        }
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
 
         .loancontrol-sidebar-overlay {
           display: none;
@@ -735,75 +1223,145 @@ export function Sidebar({
 
         @media (max-width: 900px) {
           .loancontrol-sidebar {
-            width: min(320px, 88vw) !important;
-            min-width: min(320px, 88vw) !important;
-            transform: translateX(-105%);
-            transition: transform 0.28s ease;
+            width: min(330px, 88vw) !important;
+            min-width: min(330px, 88vw) !important;
+
+            transform:
+              translateX(-105%);
+
+            transition:
+              transform 0.28s
+              cubic-bezier(
+                0.22,
+                1,
+                0.36,
+                1
+              );
+
             box-shadow:
-              20px 0 50px
-                rgba(2, 6, 23, 0.3);
+              25px 0 70px
+                rgba(2, 6, 23, 0.42);
           }
 
           .loancontrol-sidebar-open {
-            transform: translateX(0);
+            transform:
+              translateX(0);
           }
 
           .loancontrol-sidebar-overlay {
             position: fixed;
+
             inset: 0;
+
             display: block;
+
             width: 100%;
             height: 100%;
-            border: 0;
+
             padding: 0;
             margin: 0;
-            background: rgba(2, 6, 23, 0.55);
-            backdrop-filter: blur(2px);
+
+            border: 0;
+
+            background:
+              rgba(2, 6, 23, 0.58);
+
+            backdrop-filter:
+              blur(3px);
+
+            -webkit-backdrop-filter:
+              blur(3px);
+
             z-index: 999;
+
             cursor: pointer;
           }
 
-          .loancontrol-mobile-close {
+          .loancontrol-brand-area {
+            padding:
+              16px 16px 17px;
+          }
+
+          .loancontrol-close-mobile {
             display: flex;
           }
 
-          .loancontrol-sidebar-top {
-            padding-top: 15px;
+          .loancontrol-navigation {
+            padding:
+              2px 12px 16px;
           }
 
-          .loancontrol-sidebar-scroll {
-            padding-top: 16px;
+          .loancontrol-menu-heading {
+            padding:
+              9px 10px 9px;
           }
 
-          .loancontrol-nav-item {
-            min-height: 47px;
+          .loancontrol-menu-item {
+            min-height: 48px;
+
+            border-radius: 12px;
+
             font-size: 14px;
-            border-radius: 11px;
           }
 
-          .loancontrol-nav-icon {
-            width: 24px;
-            min-width: 24px;
+          .loancontrol-menu-icon {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+          }
+
+          .loancontrol-menu-chevron {
+            opacity: 1;
+
+            transform:
+              translateX(0);
+
+            color: #475569;
+          }
+
+          .loancontrol-menu-item-active
+            .loancontrol-menu-chevron {
+            color: #60a5fa;
+          }
+
+          .loancontrol-admin-heading {
+            margin-top: 20px;
           }
 
           .loancontrol-sidebar-footer {
-            padding-bottom: 16px;
+            padding:
+              13px 13px 15px;
+          }
+
+          .loancontrol-status-card {
+            min-height: 46px;
           }
 
           .loancontrol-logout {
             min-height: 44px;
+          }
+
+          .loancontrol-logout-text {
             font-size: 12px;
+          }
+
+          .loancontrol-version {
+            font-size: 7px;
           }
         }
 
         @media (max-width: 380px) {
           .loancontrol-sidebar {
-            width: 88vw !important;
-            min-width: 88vw !important;
+            width: 90vw !important;
+            min-width: 90vw !important;
           }
 
           .loancontrol-brand-name {
             font-size: 18px;
+          }
+
+          .loancontrol-brand-caption {
+            font-size: 8px;
           }
         }
       `}</style>
